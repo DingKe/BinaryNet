@@ -188,7 +188,7 @@ class BinaryConvolution2D(Convolution2D):
             del self.initial_weights
 
     def call(self, x, mask=None):
-        Wb = B.binarize(self.W, H=self.H) 
+        Wb = binarize(self.W, H=self.H) 
         conv_out = K.conv2d(x, Wb, strides=self.subsample,
                             border_mode=self.border_mode,
                             dim_ordering=self.dim_ordering,

@@ -1,6 +1,8 @@
 '''Trains a simple binarize fully connected NN on the MNIST dataset.
 Modified from keras' examples/mnist_mlp.py
+Gets to 98.12% test accuracy after 20 epochs using theano backend
 '''
+
 
 from __future__ import print_function
 import numpy as np
