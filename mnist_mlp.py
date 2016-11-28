@@ -1,6 +1,6 @@
 '''Trains a simple binarize fully connected NN on the MNIST dataset.
 Modified from keras' examples/mnist_mlp.py
-Gets to 98.12% test accuracy after 20 epochs using theano backend
+Gets to 97.9% test accuracy after 20 epochs using theano backend
 '''
 
 
@@ -8,6 +8,7 @@ from __future__ import print_function
 import numpy as np
 np.random.seed(1337)  # for reproducibility
 
+import keras.backend as K
 from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, BatchNormalization
@@ -17,6 +18,17 @@ from keras.utils import np_utils
 
 from binary_ops import binary_tanh as binary_tanh_op
 from binary_layers import BinaryDense
+
+
+class DropoutNoScale(Dropout):
+    '''Keras Dropout does scale the input in training phase, which is undesirable here.
+    '''
+    def call(self, x, mask=None):
+        if 0. < self.p < 1.:
+            noise_shape = self._get_noise_shape(x)
+            x = K.in_train_phase(K.dropout(x, self.p, noise_shape) * (1. - self.p), # multiplied by (1. - self.p) for compensation
+                                 x)
+        return x
 
 
 def binary_tanh(x):
@@ -65,13 +77,13 @@ Y_train = np_utils.to_categorical(y_train, nb_classes) * 2 - 1 # -1 or 1 for hin
 Y_test = np_utils.to_categorical(y_test, nb_classes) * 2 - 1
 
 model = Sequential()
-model.add(Dropout(drop_in, input_shape=(784,), name='drop0'))
+model.add(DropoutNoScale(drop_in, input_shape=(784,), name='drop0'))
 for i in range(num_hidden):
     model.add(BinaryDense(num_unit, H=H, W_lr_multiplier=W_lr_multiplier, bias=bias,
               name='dense{}'.format(i+1)))
     model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn{}'.format(i+1)))
     model.add(Activation(binary_tanh, name='act{}'.format(i+1)))
-    model.add(Dropout(drop_hidden, name='drop{}'.format(i+1)))
+    model.add(DropoutNoScale(drop_hidden, name='drop{}'.format(i+1)))
 model.add(BinaryDense(10, H=H, W_lr_multiplier=W_lr_multiplier, bias=bias,
           name='dense'))
 model.add(BatchNormalization(epsilon=epsilon, momentum=momentum, name='bn'))
