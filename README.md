@@ -1,3 +1,6 @@
+**Depricated!**  The repo is based on Keras 1.2 and not maintained anymore.
+Check [here](https://github.com/DingKe/nn_playground/tree/master/binarynet) if you use Keras 2.0.
+
 An implemtation of binaryNet for Keras.
 
 The binarized Dense and Conv2D are two keras layers, thus can be integrated into keras framework out of box.
